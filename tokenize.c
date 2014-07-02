@@ -311,7 +311,27 @@ tokenize(source_t source, uint32_t begin, const uint32_t length) {
 
 
   while (begin <= length && source[begin]) {
-    if ((position = match_float(source, begin, length))) {
+   if (source[begin] == '(') {
+      /*Matched a left paren */
+      position = begin + 1;
+      push_token(&token_stack, left_paren);
+    }
+    else if (source[begin] == ')') {
+      /*Matched a left paren */
+      position = begin + 1;
+      push_token(&token_stack, right_paren);
+    }
+    else if (source[begin] == '\'') {
+      /* Matched a quote (apostrophe) */
+      position = begin + 1;
+      push_token(&token_stack, quote_tok);
+    }
+    else if (isspace(source[begin])) {
+      position = begin + 1;
+      push_token(&token_stack, whitespace_tok);
+      /* Matched a whitespace character */
+    }
+    else if ((position = match_float(source, begin, length))) {
       /* Matched a float */
       assert(position > begin);
 
@@ -358,26 +378,6 @@ tokenize(source_t source, uint32_t begin, const uint32_t length) {
 
       push_token(&token_stack, make_token(current_token, IDENTIFIER));
       /* Matched an identifier */
-    }
-    else if (source[begin] == '(') {
-      /*Matched a left paren */
-      position = begin + 1;
-      push_token(&token_stack, left_paren);
-    }
-    else if (source[begin] == ')') {
-      /*Matched a left paren */
-      position = begin + 1;
-      push_token(&token_stack, right_paren);
-    }
-    else if (source[begin] == '\'') {
-      /* Matched a quote (apostrophe) */
-      position = begin + 1;
-      push_token(&token_stack, quote_tok);
-    }
-    else if (isspace(source[begin])) {
-      position = begin + 1;
-      push_token(&token_stack, whitespace_tok);
-      /* Matched a whitespace character */
     }
     else {
       printf("Unmatched token\n");
