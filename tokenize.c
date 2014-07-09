@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <assert.h>
+#include "maa.h"
 #include "tokenize.h"
 
 /*
@@ -22,9 +23,7 @@ static const token_t left_paren = {.token_type=PAREN, .token={.parenthesis="("} 
 
 static const token_t right_paren = {.token_type=PAREN, .token={.parenthesis=")"} };
 
-static
-inline
-char *
+static inline char *
 string_head(uint32_t n, char *in, char *out) {
   /* out must be large enough to store the number of characters
    * you want to select from in, plus a byte for the null terminator
@@ -44,9 +43,7 @@ string_head(uint32_t n, char *in, char *out) {
   return out;
 }
 
-static
-inline
-token_t
+static inline token_t
 make_token(token_val_t val, tok_t toktype) {
   token_t result;
   result.token_type = toktype;
@@ -102,29 +99,11 @@ pop_token(token_stream *tokens) {
   len--;
   assert(tokens->tokens != NULL);
 
-  switch (tokens->tokens[len].token_type) {
-    case SYMBOL:
-      free(tokens->tokens[len].token.symbol);
-      break;
-    case IDENTIFIER:
-      free(tokens->tokens[len].token.identifier);
-      break;
-    case INTEGER:
-      free(tokens->tokens[len].token.integer);
-      break;
-    case FLOATING:
-      free(tokens->tokens[len].token.floating);
-      break;
-    default:
-      break;
-  }
-
   tokens->length--;
   return true;
 }
 
-inline
-token_t
+inline token_t
 peek_token(token_stream *tokens) {
   /*
    * Check if tokens points to NULL
@@ -140,9 +119,7 @@ peek_token(token_stream *tokens) {
   return tokens->tokens[len-1];
 }
 
-static
-inline
-uint32_t
+static inline uint32_t
 match_int(source_t source, uint32_t begin, const uint32_t length) {
   /* Return false if there is no match
    * otherwise return the position of the end of the match + 1
@@ -166,9 +143,7 @@ match_int(source_t source, uint32_t begin, const uint32_t length) {
   return i;
 }
 
-static
-inline
-uint32_t
+static inline uint32_t
 match_float(source_t source, uint32_t begin, const uint32_t length) {
   /* Return false if there is no match
    * otherwise:
@@ -218,9 +193,7 @@ match_float(source_t source, uint32_t begin, const uint32_t length) {
   return false;
 }
 
-static
-inline
-uint32_t
+static inline uint32_t
 match_identifier(source_t source, uint32_t begin, const uint32_t length) {
 
   /* Return false if there is no match
@@ -251,9 +224,7 @@ match_identifier(source_t source, uint32_t begin, const uint32_t length) {
   return i;
 }
 
-static
-inline
-uint32_t
+static inline uint32_t
 match_symbol(source_t source, uint32_t begin, const uint32_t length) {
   uint32_t i, identifier_match;
   assert(source != NULL);
@@ -273,9 +244,7 @@ match_symbol(source_t source, uint32_t begin, const uint32_t length) {
   return false;
 }
 
-static
-inline
-void
+static inline void
 extract_token(uint32_t position,
                    uint32_t begin,
                    source_t source,
@@ -300,6 +269,8 @@ tokenize(source_t source, uint32_t begin, const uint32_t length) {
   token_val_t current_token;
   token_t *tokens = calloc(STACK_SIZE, sizeof(token_t));
 
+  hsh_HashTable token_memo = hsh_create(NULL, NULL);
+
   assert(begin == 0);
   assert(length > 0);
   assert(source != NULL);
@@ -307,8 +278,9 @@ tokenize(source_t source, uint32_t begin, const uint32_t length) {
   token_stack.length = 0;
   token_stack.max_length = STACK_SIZE;
   token_stack.tokens = tokens;
+  token_stack.memo = token_memo;
+  char lookahead = '\0';
   assert(STACK_SIZE > 0);
-
 
   while (begin <= length && source[begin]) {
    if (source[begin] == '(') {
@@ -333,48 +305,86 @@ tokenize(source_t source, uint32_t begin, const uint32_t length) {
     }
     else if ((position = match_float(source, begin, length))) {
       /* Matched a float */
-      assert(position > begin);
-
-      current_token_val = calloc(((position - begin) + 1), sizeof(char));
-      assert(current_token_val != NULL);
-      extract_token(position, begin, source, current_token_val);
-      current_token.floating = current_token_val;
-
+      lookahead = source[position];
+      source[position] = '\0';
+      if ((current_token_val = (char *)hsh_retrieve(token_stack.memo, source+begin))) {
+        current_token.floating = current_token_val;
+        source[position] = lookahead;
+      }
+      else {
+        source[position] = lookahead;
+        assert(position > begin);
+        current_token_val = calloc(((position - begin) + 1), sizeof(char));
+        assert(current_token_val != NULL);
+        extract_token(position, begin, source, current_token_val);
+        hsh_insert(token_stack.memo, current_token_val, current_token_val);
+        current_token.floating = current_token_val;
+      }
       push_token(&token_stack, make_token(current_token, FLOATING));
     }
     else if ((position = match_int(source, begin, length))) {
       /* Matched an int */
-      assert(position > begin);
-      assert(position <= length);
-      current_token_val = calloc(((position - begin) + 1), sizeof(char));
-      assert(current_token_val != NULL);
-      extract_token(position, begin, source, current_token_val);
+      lookahead = source[position];
+      source[position] = '\0';
+      if ((current_token_val = hsh_retrieve(token_stack.memo, source+begin))) {
+        current_token.integer = (char *)current_token_val;
+        source[position] = lookahead;
+      }
+      else {
+        assert(position > begin);
+        assert(position <= length);
 
-      current_token.integer = current_token_val;
+        source[position] = lookahead;
+        current_token_val = calloc(((position - begin) + 1), sizeof(char));
+        assert(current_token_val != NULL);
+        extract_token(position, begin, source, current_token_val);
+        hsh_insert(token_stack.memo, current_token_val, current_token_val);
+        current_token.integer = current_token_val;
+      }
 
       push_token(&token_stack, make_token(current_token, INTEGER));
     }
     else if ((position = match_symbol(source, begin, length))) {
       /* Matched a symbol */
-      assert(position > begin);
-      assert(position <= length);
-      current_token_val = calloc(((position - begin) + 1), sizeof(char));
-      assert(current_token_val != NULL);
-      extract_token(position, begin, source, current_token_val);
+      lookahead = source[position];
+      source[position] = '\0';
+      if ((current_token_val = hsh_retrieve(token_stack.memo, source+begin))) {
+        current_token.symbol = (char *)current_token_val;
+        source[position] = lookahead;
+      }
+      else {
+        assert(position > begin);
+        assert(position <= length);
 
-      current_token.symbol = current_token_val;
-
+        source[position] = lookahead;
+        current_token_val = calloc(((position - begin) + 1), sizeof(char));
+        assert(current_token_val != NULL);
+        extract_token(position, begin, source, current_token_val);
+        hsh_insert(token_stack.memo, current_token_val, current_token_val);
+        current_token.symbol = current_token_val;
+      }
       push_token(&token_stack, make_token(current_token, SYMBOL));
-
     }
     else if ((position = match_identifier(source, begin, length))) {
-      assert(position > begin);
-      assert(position <= length);
-      current_token_val = calloc(((position - begin) + 1), sizeof(char));
-      assert(current_token_val != NULL);
-      extract_token(position, begin, source, current_token_val);
+      /* Matched an identifier */
+      lookahead = source[position];
+      source[position] = '\0';
+      if ((current_token_val = hsh_retrieve(token_stack.memo, source+begin))) {
+        current_token.identifier = (char *)current_token_val;
+        source[position] = lookahead;
+      }
+      else {
 
-      current_token.identifier = current_token_val;
+        assert(position > begin);
+        assert(position <= length);
+
+        source[position] = lookahead;
+        current_token_val = calloc(((position - begin) + 1), sizeof(char));
+        assert(current_token_val != NULL);
+        extract_token(position, begin, source, current_token_val);
+        hsh_insert(token_stack.memo, current_token_val, current_token_val);
+        current_token.identifier = current_token_val;
+      }
 
       push_token(&token_stack, make_token(current_token, IDENTIFIER));
       /* Matched an identifier */
@@ -385,7 +395,15 @@ tokenize(source_t source, uint32_t begin, const uint32_t length) {
     }
     begin = position;
   }
+
   return token_stack;
+}
+
+int free_token(const void *key, const void *val) {
+  /* silence warnings about unused parameters, key and val point to the same data*/
+  (void)key;
+  free((char *)val);
+  return true;
 }
 
 bool
@@ -396,10 +414,9 @@ release_tokens(token_stream *tokens) {
   assert(tokens != NULL);
   assert(tokens->tokens != NULL);
   assert(tokens->max_length > 0);
-
-  while(tokens->length > 0) {
-    pop_token(tokens);
-  }
   free(tokens->tokens);
+  hsh_iterate(tokens->memo, free_token);
+
+  hsh_destroy(tokens->memo);
   return true;
 }

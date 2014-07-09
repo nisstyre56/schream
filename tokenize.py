@@ -29,7 +29,8 @@ class TokenT(Structure):
 class TokStream(Structure):
     _fields_ = [("length", c_size_t),
                 ("max_length", c_size_t),
-                ("tokens", POINTER(TokenT))]
+                ("tokens", POINTER(TokenT)),
+                ("memo", c_void_p)]
 
 tokenizer.tokenize.restype = TokStream
 tokenizer.peek_token.restype = TokenT
@@ -46,8 +47,5 @@ def tokenize(source):
         tokenizer.pop_token(tp)
     tokenizer.release_tokens(tp)
 
-tokens = tokenize("(+ a b) 'blah whatever (++ +.043 -4a +.0 +.3.2"*1610)
-xs = list(tokens)
-
-#print list(tokens)
-
+line = "(+ a b) 'blah whatever (++ +.043 -4a +.0 +.3.2"
+xs = list(tokenize(line*141500))
