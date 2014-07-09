@@ -272,6 +272,10 @@ match_symbol(source_t source,
     return false;
   }
   i++;
+  while ((isspace(source[i]) ||
+         (source[i] == '\'')) && i < length) { /* consume leading whitespace and quotes */
+    i++;
+  }
   while (!isspace(source[i]) && i < length) {
     i++;
   }

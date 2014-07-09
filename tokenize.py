@@ -47,6 +47,6 @@ def tokenize(source):
         tokenizer.pop_token(tp)
     tokenizer.release_tokens(tp)
 
-line = " '34 34"
+line = " '''' a b"
 xs = list(tokenize(line))
 print xs
