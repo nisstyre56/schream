@@ -396,7 +396,8 @@ tokenize(source_t source, uint32_t begin, const uint32_t length) {
   return token_stack;
 }
 
-int free_token(const void *key, const void *val) {
+int
+free_token(const void *key, const void *val) {
   /* silence warnings about unused parameters, key and val point to the same data*/
   (void)key;
   free((char *)val);
