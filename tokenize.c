@@ -14,21 +14,21 @@
  */
 
 static const token_t nulltok = {
-  .token_type=EMPTY,
+  .token_type = EMPTY,
     {
       .null_token=false
     }
 };
 
 static const token_t whitespace_tok = {
-  .token_type=WSPACE,
+  .token_type = WSPACE,
   .token= {
     .whitespace=true
   }
 };
 
 static const token_t quote_tok = {
-  .token_type=QUOTE,
+  .token_type = QUOTE,
   .token= {
     .quote=true
   }
@@ -272,10 +272,10 @@ match_symbol(source_t source,
     return false;
   }
   i++;
-  while (!isspace(source[i]) && i <= length) {
+  while (!isspace(source[i]) && i < length) {
     i++;
   }
-  if (i == begin) {
+  if (i == begin+1) { /* if we did not increment i more than once (before the loop) */
     return false;
   }
   return i;
