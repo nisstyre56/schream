@@ -49,7 +49,7 @@ static const token_t right_paren = {
 };
 
 static inline char *
-string_head(uint16_t n,
+string_head(uint32_t n,
             char *in,
             char *out) {
   /* out must be large enough to store the number of characters
@@ -148,15 +148,15 @@ peek_token(token_stream *tokens) {
   return tokens->tokens[len-1];
 }
 
-static inline uint16_t
+static inline uint32_t
 match_int(source_t source,
-          uint16_t begin,
-          const uint16_t length) {
+          uint32_t begin,
+          const uint32_t length) {
   /* Return false if there is no match
    * otherwise return the position of the end of the match + 1
    */
-  uint16_t i = begin;
-  uint16_t test;
+  uint32_t i = begin;
+  uint32_t test;
   assert(source != NULL);
   assert(length > 0);
 
@@ -174,10 +174,10 @@ match_int(source_t source,
   return i;
 }
 
-static inline uint16_t
+static inline uint32_t
 match_float(source_t source,
-            uint16_t begin,
-            const uint16_t length) {
+            uint32_t begin,
+            const uint32_t length) {
   /* Return false if there is no match
    * otherwise:
    *  if there is a leading decimal point and then a valid int match:
@@ -191,7 +191,7 @@ match_float(source_t source,
    *      return false
    * ALWAYS returns the position + 1 to avoid confusion with false (which is a valid index)
    */
-  uint16_t i, leading_int_match, trailing_int_match;
+  uint32_t i, leading_int_match, trailing_int_match;
   assert(source != NULL);
   assert(length > 0);
 
@@ -226,10 +226,10 @@ match_float(source_t source,
   return false;
 }
 
-static inline uint16_t
+static inline uint32_t
 match_identifier(source_t source,
-                 uint16_t begin,
-                 const uint16_t length) {
+                 uint32_t begin,
+                 const uint32_t length) {
 
   /* Return false if there is no match
    *    if there is a match for any characters that are not:
@@ -241,7 +241,7 @@ match_identifier(source_t source,
    *    if there is nothing else to match:
    *      return false
    */
-  uint16_t i = begin;
+  uint32_t i = begin;
   assert(source != NULL);
   assert(length > 0);
 
@@ -259,11 +259,11 @@ match_identifier(source_t source,
   return i;
 }
 
-static inline uint16_t
+static inline uint32_t
 match_symbol(source_t source,
-             uint16_t begin,
-             const uint16_t length) {
-  uint16_t i;
+             uint32_t begin,
+             const uint32_t length) {
+  uint32_t i;
   assert(source != NULL);
   assert(length > 0);
 
@@ -282,8 +282,8 @@ match_symbol(source_t source,
 }
 
 static inline void
-extract_token(uint16_t position,
-              uint16_t begin,
+extract_token(uint32_t position,
+              uint32_t begin,
               source_t source,
               char *token_val) {
     assert(position > begin);
@@ -294,15 +294,15 @@ extract_token(uint16_t position,
 
 token_stream
 tokenize(source_t source,
-         uint16_t begin,
-         const uint16_t length) {
+         uint32_t begin,
+         const uint32_t length) {
   /*
    * Remember to free everything from this struct
    * for example, token_stack.tokens will not necessarily be
    * equal to tokens after this function has run
    *
    */
-  uint16_t position = begin;
+  uint32_t position = begin;
   char *current_token_val;
   token_stream token_stack;
   token_val_t current_token;

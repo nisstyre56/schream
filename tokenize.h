@@ -1,5 +1,5 @@
 #define STACK_SIZE 4096
-#define GROWTH_SIZE 512
+#define GROWTH_SIZE 65536
 
 typedef char* source_t;
 
@@ -34,6 +34,7 @@ typedef struct {
   size_t length; /* Number of current elements */
   size_t max_length; /* Maximum length of the stack */
   token_t *tokens;
+  hsh_HashTable memo;
 } token_stream;
 
 bool push_token(token_stream*, token_t);
