@@ -13,18 +13,45 @@
  * it also tokenizes things like number, string, and symbol literals
  */
 
-static const token_t nulltok = {.token_type=EMPTY, {.null_token=false}};
+static const token_t nulltok = {
+  .token_type=EMPTY,
+    {
+      .null_token=false
+    }
+};
 
-static const token_t whitespace_tok = {.token_type=WSPACE, .token={.whitespace=true } };
+static const token_t whitespace_tok = {
+  .token_type=WSPACE,
+  .token= {
+    .whitespace=true
+  }
+};
 
-static const token_t quote_tok = {.token_type=QUOTE, .token={.quote=true} };
+static const token_t quote_tok = {
+  .token_type=QUOTE,
+  .token= {
+    .quote=true
+  }
+};
 
-static const token_t left_paren = {.token_type=PAREN, .token={.parenthesis="("} };
+static const token_t left_paren = {
+  .token_type = PAREN,
+                .token = {
+                  .parenthesis="("
+                }
+};
 
-static const token_t right_paren = {.token_type=PAREN, .token={.parenthesis=")"} };
+static const token_t right_paren = {
+  .token_type = PAREN,
+  .token = {
+    .parenthesis=")"
+  }
+};
 
 static inline char *
-string_head(uint32_t n, char *in, char *out) {
+string_head(uint32_t n,
+            char *in,
+            char *out) {
   /* out must be large enough to store the number of characters
    * you want to select from in, plus a byte for the null terminator
    */
@@ -44,7 +71,8 @@ string_head(uint32_t n, char *in, char *out) {
 }
 
 static inline token_t
-make_token(token_val_t val, tok_t toktype) {
+make_token(token_val_t val,
+           tok_t toktype) {
   token_t result;
   result.token_type = toktype;
   result.token = val;
@@ -52,7 +80,8 @@ make_token(token_val_t val, tok_t toktype) {
 }
 
 bool
-push_token(token_stream *tokens, token_t token) {
+push_token(token_stream *tokens,
+           token_t token) {
   /*
    * Check if tokens points to NULL
    */
@@ -120,7 +149,9 @@ peek_token(token_stream *tokens) {
 }
 
 static inline uint32_t
-match_int(source_t source, uint32_t begin, const uint32_t length) {
+match_int(source_t source,
+          uint32_t begin,
+          const uint32_t length) {
   /* Return false if there is no match
    * otherwise return the position of the end of the match + 1
    */
@@ -144,7 +175,9 @@ match_int(source_t source, uint32_t begin, const uint32_t length) {
 }
 
 static inline uint32_t
-match_float(source_t source, uint32_t begin, const uint32_t length) {
+match_float(source_t source,
+            uint32_t begin,
+            const uint32_t length) {
   /* Return false if there is no match
    * otherwise:
    *  if there is a leading decimal point and then a valid int match:
@@ -194,7 +227,9 @@ match_float(source_t source, uint32_t begin, const uint32_t length) {
 }
 
 static inline uint32_t
-match_identifier(source_t source, uint32_t begin, const uint32_t length) {
+match_identifier(source_t source,
+                 uint32_t begin,
+                 const uint32_t length) {
 
   /* Return false if there is no match
    *    if there is a match for any characters that are not:
@@ -225,7 +260,9 @@ match_identifier(source_t source, uint32_t begin, const uint32_t length) {
 }
 
 static inline uint32_t
-match_symbol(source_t source, uint32_t begin, const uint32_t length) {
+match_symbol(source_t source,
+             uint32_t begin,
+             const uint32_t length) {
   uint32_t i;
   assert(source != NULL);
   assert(length > 0);
@@ -246,9 +283,9 @@ match_symbol(source_t source, uint32_t begin, const uint32_t length) {
 
 static inline void
 extract_token(uint32_t position,
-                   uint32_t begin,
-                   source_t source,
-                   char *token_val) {
+              uint32_t begin,
+              source_t source,
+              char *token_val) {
     assert(position > begin);
     string_head(position - begin,
                 &source[begin],
@@ -256,7 +293,9 @@ extract_token(uint32_t position,
 }
 
 token_stream
-tokenize(source_t source, uint32_t begin, const uint32_t length) {
+tokenize(source_t source,
+         uint32_t begin,
+         const uint32_t length) {
   /*
    * Remember to free everything from this struct
    * for example, token_stack.tokens will not necessarily be
@@ -283,7 +322,7 @@ tokenize(source_t source, uint32_t begin, const uint32_t length) {
   assert(STACK_SIZE > 0);
 
   while (begin <= length && source[begin]) {
-   if (source[begin] == '(') {
+    if (source[begin] == '(') {
       /*Matched a left paren */
       position = begin + 1;
       push_token(&token_stack, left_paren);
@@ -293,7 +332,7 @@ tokenize(source_t source, uint32_t begin, const uint32_t length) {
       position = begin + 1;
       push_token(&token_stack, right_paren);
     }
-   else if (isspace(source[begin])) {
+    else if (isspace(source[begin])) {
       position = begin + 1;
       push_token(&token_stack, whitespace_tok);
       /* Matched a whitespace character */
@@ -397,7 +436,8 @@ tokenize(source_t source, uint32_t begin, const uint32_t length) {
 }
 
 int
-free_token(const void *key, const void *val) {
+free_token(const void *key,
+           const void *val) {
   /* silence warnings about unused parameters, key and val point to the same data*/
   (void)key;
   free((char *)val);
