@@ -226,7 +226,7 @@ match_identifier(source_t source, uint32_t begin, const uint32_t length) {
 
 static inline uint32_t
 match_symbol(source_t source, uint32_t begin, const uint32_t length) {
-  uint32_t i, identifier_match;
+  uint32_t i;
   assert(source != NULL);
   assert(length > 0);
 
@@ -235,13 +235,13 @@ match_symbol(source_t source, uint32_t begin, const uint32_t length) {
     return false;
   }
   i++;
-
-  identifier_match = match_identifier(source, i, length);
-  if (identifier_match) {
-    return identifier_match;
+  while (!isspace(source[i]) && i <= length) {
+    i++;
   }
-  assert(identifier_match <= length);
-  return false;
+  if (i == begin) {
+    return false;
+  }
+  return i;
 }
 
 static inline void
@@ -293,12 +293,7 @@ tokenize(source_t source, uint32_t begin, const uint32_t length) {
       position = begin + 1;
       push_token(&token_stack, right_paren);
     }
-    else if (source[begin] == '\'') {
-      /* Matched a quote (apostrophe) */
-      position = begin + 1;
-      push_token(&token_stack, quote_tok);
-    }
-    else if (isspace(source[begin])) {
+   else if (isspace(source[begin])) {
       position = begin + 1;
       push_token(&token_stack, whitespace_tok);
       /* Matched a whitespace character */
@@ -326,8 +321,8 @@ tokenize(source_t source, uint32_t begin, const uint32_t length) {
       /* Matched an int */
       lookahead = source[position];
       source[position] = '\0';
-      if ((current_token_val = hsh_retrieve(token_stack.memo, source+begin))) {
-        current_token.integer = (char *)current_token_val;
+      if ((current_token_val = (char *)hsh_retrieve(token_stack.memo, source+begin))) {
+        current_token.integer = current_token_val;
         source[position] = lookahead;
       }
       else {
@@ -341,15 +336,14 @@ tokenize(source_t source, uint32_t begin, const uint32_t length) {
         hsh_insert(token_stack.memo, current_token_val, current_token_val);
         current_token.integer = current_token_val;
       }
-
       push_token(&token_stack, make_token(current_token, INTEGER));
     }
     else if ((position = match_symbol(source, begin, length))) {
       /* Matched a symbol */
       lookahead = source[position];
       source[position] = '\0';
-      if ((current_token_val = hsh_retrieve(token_stack.memo, source+begin))) {
-        current_token.symbol = (char *)current_token_val;
+      if ((current_token_val = (char *)hsh_retrieve(token_stack.memo, source+begin))) {
+        current_token.symbol = current_token_val;
         source[position] = lookahead;
       }
       else {
@@ -365,16 +359,20 @@ tokenize(source_t source, uint32_t begin, const uint32_t length) {
       }
       push_token(&token_stack, make_token(current_token, SYMBOL));
     }
+    else if (source[begin] == '\'') {
+      /* Matched a quote (apostrophe) */
+      position = begin + 1;
+      push_token(&token_stack, quote_tok);
+    }
     else if ((position = match_identifier(source, begin, length))) {
       /* Matched an identifier */
       lookahead = source[position];
       source[position] = '\0';
-      if ((current_token_val = hsh_retrieve(token_stack.memo, source+begin))) {
-        current_token.identifier = (char *)current_token_val;
+      if ((current_token_val = (char *)hsh_retrieve(token_stack.memo, source+begin))) {
+        current_token.identifier = current_token_val;
         source[position] = lookahead;
       }
       else {
-
         assert(position > begin);
         assert(position <= length);
 
@@ -385,7 +383,6 @@ tokenize(source_t source, uint32_t begin, const uint32_t length) {
         hsh_insert(token_stack.memo, current_token_val, current_token_val);
         current_token.identifier = current_token_val;
       }
-
       push_token(&token_stack, make_token(current_token, IDENTIFIER));
       /* Matched an identifier */
     }

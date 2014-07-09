@@ -47,5 +47,6 @@ def tokenize(source):
         tokenizer.pop_token(tp)
     tokenizer.release_tokens(tp)
 
-line = "(+ a b) 'blah whatever (++ +.043 -4a +.0 +.3.2"
-xs = list(tokenize(line*141500))
+line = " '34 34"
+xs = list(tokenize(line))
+print xs
