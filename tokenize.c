@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <assert.h>
+#include "error.h"
 #include "maa.h"
 #include "tokenize.h"
 
@@ -13,7 +14,7 @@
  * it also tokenizes things like number, string, and symbol literals
  */
 
-static const token_t nulltok = {
+const token_t nulltok = {
   .token_type = EMPTY,
     {
       .null_token=false
@@ -61,7 +62,7 @@ string_head(uint32_t n,
   assert(n > 0 && n <= in_len);
   int iserror = snprintf(out, (size_t)n+1 , "%s", in);
 
-  assert((iserror != -1) && (iserror == in_len));
+  assert((iserror != -1) && ((size_t)iserror == in_len));
 
   if (iserror == -1) {
     printf("Out of memory");
@@ -89,7 +90,7 @@ push_token(token_stream *tokens,
   size_t len;
   size_t max;
 
-  assert(tokens != NULL);
+  CHECK(tokens);
 
   len = tokens->length;
   max = tokens->max_length;
@@ -120,13 +121,13 @@ push_token(token_stream *tokens,
 bool
 pop_token(token_stream *tokens) {
   size_t len;
-  assert(tokens != NULL);
+  CHECK(tokens);
 
   len = tokens->length;
 
   assert(len != 0);
   len--;
-  assert(tokens->tokens != NULL);
+  CHECK(tokens->tokens);
 
   tokens->length--;
   return true;
@@ -139,7 +140,7 @@ peek_token(token_stream *tokens) {
    */
   size_t len = tokens->length;
   size_t max = tokens->max_length;
-  assert(tokens != NULL);
+  CHECK(tokens);
   assert(len != 0);
 
   if (len == 0 || len > max) {
@@ -157,7 +158,7 @@ match_int(source_t source,
    */
   uint32_t i = begin;
   uint32_t test;
-  assert(source != NULL);
+  CHECK(source);
   assert(length > 0);
 
   if (source[i] == '+' ||
@@ -192,7 +193,7 @@ match_float(source_t source,
    * ALWAYS returns the position + 1 to avoid confusion with false (which is a valid index)
    */
   uint32_t i, leading_int_match, trailing_int_match;
-  assert(source != NULL);
+  CHECK(source);
   assert(length > 0);
 
   i = begin;
@@ -242,7 +243,7 @@ match_identifier(source_t source,
    *      return false
    */
   uint32_t i = begin;
-  assert(source != NULL);
+  CHECK(source);
   assert(length > 0);
 
   while (i < length &&
@@ -264,7 +265,7 @@ match_symbol(source_t source,
              uint32_t begin,
              const uint32_t length) {
   uint32_t i;
-  assert(source != NULL);
+  CHECK(source);
   assert(length > 0);
 
   i = begin;
@@ -316,7 +317,7 @@ tokenize(source_t source,
 
   assert(begin == 0);
   assert(length > 0);
-  assert(source != NULL);
+  CHECK(source);
 
   token_stack.length = 0;
   token_stack.max_length = STACK_SIZE;
@@ -353,7 +354,7 @@ tokenize(source_t source,
         source[position] = lookahead;
         assert(position > begin);
         current_token_val = calloc(((position - begin) + 1), sizeof(char));
-        assert(current_token_val != NULL);
+        CHECK(current_token_val);
         extract_token(position, begin, source, current_token_val);
         hsh_insert(token_stack.memo, current_token_val, current_token_val);
         current_token.floating = current_token_val;
@@ -374,7 +375,7 @@ tokenize(source_t source,
 
         source[position] = lookahead;
         current_token_val = calloc(((position - begin) + 1), sizeof(char));
-        assert(current_token_val != NULL);
+        CHECK(current_token_val);
         extract_token(position, begin, source, current_token_val);
         hsh_insert(token_stack.memo, current_token_val, current_token_val);
         current_token.integer = current_token_val;
@@ -395,7 +396,7 @@ tokenize(source_t source,
 
         source[position] = lookahead;
         current_token_val = calloc(((position - begin) + 1), sizeof(char));
-        assert(current_token_val != NULL);
+        CHECK(current_token_val);
         extract_token(position, begin, source, current_token_val);
         hsh_insert(token_stack.memo, current_token_val, current_token_val);
         current_token.symbol = current_token_val;
@@ -421,7 +422,7 @@ tokenize(source_t source,
 
         source[position] = lookahead;
         current_token_val = calloc(((position - begin) + 1), sizeof(char));
-        assert(current_token_val != NULL);
+        CHECK(current_token_val);
         extract_token(position, begin, source, current_token_val);
         hsh_insert(token_stack.memo, current_token_val, current_token_val);
         current_token.identifier = current_token_val;
@@ -457,8 +458,8 @@ release_tokens(token_stream *tokens) {
   /* Iterate through the stack, release each token
    * Then release the entire stack
    */
-  assert(tokens != NULL);
-  assert(tokens->tokens != NULL);
+  CHECK(tokens);
+  CHECK(tokens->tokens);
   assert(tokens->max_length > 0);
   free(tokens->tokens);
   hsh_iterate(tokens->memo, free_token);
