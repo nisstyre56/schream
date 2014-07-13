@@ -90,7 +90,8 @@ invoke(closure_t closure, svalue_t val) {
   return func(val, closure.fvars);
 }
 
-/*static svalue_t*
+#ifndef LIB
+static svalue_t*
 make_adder_inner(svalue_t x, svalue_t *env) {
   svalue_variants_t val;
   val.integer = env[0].value.integer + x.value.integer;
@@ -101,9 +102,9 @@ static closure_t
 make_adder(svalue_t *inc) {
   closure_t closure = make_closure(make_adder_inner, inc);
   return closure;
-}*/
+}
 
-/*int
+int
 main(void) {
   closure_t add2 = make_adder(box_int(2));
   printf("%d\n", invoke(add2, *box_int(5))->value.integer);
@@ -111,4 +112,5 @@ main(void) {
   (void)box_double;
   (void)box_string;
   return 0;
-}*/
+}
+#endif

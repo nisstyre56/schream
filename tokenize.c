@@ -467,3 +467,9 @@ release_tokens(token_stream *tokens) {
   hsh_destroy(tokens->memo);
   return true;
 }
+
+#ifndef LIB
+int main(void) {
+  return 0;
+}
+#endif

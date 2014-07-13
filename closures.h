@@ -50,9 +50,10 @@ make_closure(svalue_t* (*func)(svalue_t, svalue_t*),
 svalue_t*
 invoke(closure_t, svalue_t);
 
-/*static svalue_t*
+#ifndef LIB
+static svalue_t*
 make_adder_inner(svalue_t, svalue_t *);
 
 static closure_t
 make_adder(svalue_t *);
-*/
+#endif
