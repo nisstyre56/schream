@@ -57,10 +57,10 @@ typedef
   }
   cell;
 
-svalue_t *
+svalue_t
 box_value(svalue_variants_t, stype_t);
 
-closure_t
+closure_t*
 make_closure(svalue_t *(*func)(svalue_t*, svalue_t**),
                                      svalue_t**);
 
@@ -82,4 +82,4 @@ box_string(char *,
            size_t);
 
 inline svalue_t *
-box_closure(closure_t);
+box_closure(closure_t*);

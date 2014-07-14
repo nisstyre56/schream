@@ -13,36 +13,30 @@ make_doubleadder_inner(svalue_t *, svalue_t **);
 static svalue_t*
 make_doubleadder(svalue_t *, svalue_t **);
 
-static svalue_t*
-make_adder_inner(svalue_t*, svalue_t **);
-
-static closure_t
-make_adder(svalue_t *);
-
-inline svalue_t *
+inline svalue_t
 box_value(svalue_variants_t value,
           stype_t type) {
 
-  svalue_t *val = calloc(sizeof(svalue_t), 1);
-  CHECK(val);
+  svalue_t val;
   switch (type) {
     case INT:
-      val->value = value;
-      val->type_tag = type;
+      val.value.integer = value.integer;
+      val.type_tag = type;
       break;
     case FLOAT:
-      val->value = value;
-      val->type_tag = type;
+      val.value.floating = value.floating;
+      val.type_tag = type;
       break;
     case DOUBLE:
-      val->value = value;
-      val->type_tag = type;
+      val.value.doublev = value.doublev;
+      val.type_tag = type;
     case STRING:
-      val->value = value;
-      val->type_tag = type;
+      val.value.string = value.string;
+      val.type_tag = type;
     case CLOSURE:
-      val->value = value;
-      val->type_tag = type;
+      val.value.closure = value.closure;
+      /*printf("%p\n", val->value.closure->func);*/
+      val.type_tag = type;
   }
   return val;
 }
@@ -53,7 +47,7 @@ box_int(int x) {
   CHECK(val);
   svalue_variants_t value_val;
   value_val.integer = x;
-  val = box_value(value_val, INT);
+  *val = box_value(value_val, INT);
   return val;
 }
 
@@ -63,7 +57,7 @@ box_float(float x) {
   CHECK(val);
   svalue_variants_t value_val;
   value_val.floating = x;
-  val = box_value(value_val, FLOAT);
+  *val = box_value(value_val, FLOAT);
   return val;
 }
 
@@ -73,7 +67,7 @@ box_double(double x) {
   CHECK(val);
   svalue_variants_t value_val;
   value_val.doublev = x;
-  val = box_value(value_val, DOUBLE);
+  *val = box_value(value_val, DOUBLE);
   return val;
 }
 
@@ -88,50 +82,34 @@ box_string(char *chars, size_t n) {
 
   svalue_variants_t value_val;
   value_val.string = strval;
-  val = box_value(value_val, STRING);
+  *val = box_value(value_val, STRING);
   return val;
 }
 
 inline svalue_t *
-box_closure(closure_t closure) {
-  svalue_t *val = malloc(sizeof(svalue_t));
+box_closure(closure_t *closure) {
+  svalue_t *val = calloc(sizeof(svalue_t), 1);
   CHECK(val);
   svalue_variants_t value_val;
-  value_val.closure = (struct closure_t *)(&closure);
-  val = box_value(value_val, CLOSURE);
+  value_val.closure = closure;
+  *val = box_value(value_val, CLOSURE);
   return val;
 }
 
 
-inline closure_t
+closure_t*
 make_closure(svalue_t *(*func)(svalue_t*, svalue_t**),
              svalue_t **fvars) {
-  closure_t closure;
-  closure.func = func;
-  closure.fvars = fvars;
+  closure_t *closure = calloc(sizeof(closure_t), 1);
+  closure->func = func;
+  closure->fvars = fvars;
   return closure;
 }
 
 inline svalue_t*
 invoke(svalue_t *closure, svalue_t *val) {
-  svalue_t *(*func)(svalue_t*, svalue_t**) = closure->value.closure->func;
-  return func(val, closure->value.closure->fvars);
-}
-
-static svalue_t*
-make_adder_inner(svalue_t *x, svalue_t **env) {
-  svalue_variants_t val;
-  val.integer = env[0]->value.integer + x->value.integer;
-  return box_value(val, INT);
-}
-
-static closure_t
-make_adder(svalue_t *inc) {
-  svalue_t **env = calloc(sizeof(svalue_t *), 1);
-  CHECK(env);
-  env[0] = inc;
-  closure_t closure = make_closure(make_adder_inner, env);
-  return closure;
+  printf("In invoke: %p\n", closure->value.closure->func);
+  return closure->value.closure->func(val, closure->value.closure->fvars);
 }
 
 
@@ -147,30 +125,37 @@ make_doubleadder_inner_inner(svalue_t *z, svalue_t **env) {
 static svalue_t*
 make_doubleadder_inner(svalue_t *y, svalue_t **env) {
   env[1] = y;
-  closure_t inner = make_closure(make_doubleadder_inner_inner, env);
+  closure_t *inner = make_closure(make_doubleadder_inner_inner, env);
   return box_closure(inner);
 }
 
 static svalue_t*
 make_doubleadder(svalue_t *x, svalue_t **env) {
   env[0] = x;
-  closure_t closure = make_closure(make_doubleadder_inner, env);
+  closure_t *closure = make_closure(make_doubleadder_inner, env);
   return box_closure(closure);
+}
+
+void printpointer(closure_t);
+void printpointer(closure_t closure) {
+  printf("%p\n", closure.func);
 }
 
 int
 main(void) {
-  (void)make_adder;
   (void)box_float;
   (void)box_double;
   (void)box_string;
-  (void)box_closure;
-  (void)make_doubleadder_inner_inner;
-  (void)make_doubleadder_inner;
-  (void)make_doubleadder;
-  svalue_t **env = calloc(sizeof(svalue_t), 2);
-  svalue_t *closure1 = box_closure(make_closure(make_doubleadder, env));
-  CHECK(env);
-  printf("%d\n", invoke(invoke(invoke(closure1, box_int(23)), box_int(3)), box_int(5))->value.integer);
+  svalue_t **env = calloc(sizeof(svalue_t *), 2);
+  closure_t *closure1_closure = make_closure(make_doubleadder, env);
+  printf("First %p\n", closure1_closure->func);
+  svalue_t *closure1 = box_closure(closure1_closure);
+  printf("Second %p\n", closure1->value.closure->func);
+  svalue_t *c1 = invoke(closure1, box_int(23));
+  printf("Last %p\n", c1->value.closure->func);
+  svalue_t *c2 = invoke(c1, box_int(5));
+  printf("%d\n", c2->value.closure->fvars[1]->value.integer);
+  svalue_t *result = invoke(c2, box_int(334));
+  printf("%d\n", result->value.integer);
   return 0;
 }
