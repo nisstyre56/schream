@@ -45,7 +45,7 @@ typedef
  * way
  */
 typedef
-  struct {
+  struct closure_t {
     svalue_t *(*func)(svalue_t*, svalue_t**);
     svalue_t **fvars;
   } closure_t;
@@ -65,7 +65,7 @@ make_closure(svalue_t *(*func)(svalue_t*, svalue_t**),
                                      svalue_t**);
 
 svalue_t *
-invoke(closure_t, svalue_t*);
+invoke(svalue_t*, svalue_t*);
 
 
 inline svalue_t *
@@ -83,14 +83,3 @@ box_string(char *,
 
 inline svalue_t *
 box_closure(closure_t);
-
-#ifndef LIB
-static svalue_t*
-make_doubleadder_inner_inner(svalue_t*, svalue_t **);
-
-static svalue_t*
-make_adder_inner(svalue_t*, svalue_t **);
-
-static closure_t
-make_adder(svalue_t *);
-#endif
