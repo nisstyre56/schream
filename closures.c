@@ -35,7 +35,6 @@ box_value(svalue_variants_t value,
       val.type_tag = type;
     case CLOSURE:
       val.value.closure = value.closure;
-      /*printf("%p\n", val->value.closure->func);*/
       val.type_tag = type;
   }
   return val;
@@ -100,7 +99,13 @@ box_closure(closure_t *closure) {
 closure_t*
 make_closure(svalue_t *(*func)(svalue_t*, svalue_t**),
              svalue_t **fvars) {
-  closure_t *closure = calloc(sizeof(closure_t), 1);
+  /* The reason we dynamically allocate here is because
+   * svalue_variants_t will hold a pointer to the closure
+   * and we cannot store a pointer to a stack allocated
+   * closure or else it is undefined behavior when it is invoked
+   * since it would get deallocated when this function returns
+   */
+  closure_t *closure = malloc(sizeof(closure_t));
   closure->func = func;
   closure->fvars = fvars;
   return closure;
@@ -108,7 +113,6 @@ make_closure(svalue_t *(*func)(svalue_t*, svalue_t**),
 
 inline svalue_t*
 invoke(svalue_t *closure, svalue_t *val) {
-  printf("In invoke: %p\n", closure->value.closure->func);
   return closure->value.closure->func(val, closure->value.closure->fvars);
 }
 
@@ -136,11 +140,6 @@ make_doubleadder(svalue_t *x, svalue_t **env) {
   return box_closure(closure);
 }
 
-void printpointer(closure_t);
-void printpointer(closure_t closure) {
-  printf("%p\n", closure.func);
-}
-
 int
 main(void) {
   (void)box_float;
@@ -148,14 +147,10 @@ main(void) {
   (void)box_string;
   svalue_t **env = calloc(sizeof(svalue_t *), 2);
   closure_t *closure1_closure = make_closure(make_doubleadder, env);
-  printf("First %p\n", closure1_closure->func);
   svalue_t *closure1 = box_closure(closure1_closure);
-  printf("Second %p\n", closure1->value.closure->func);
   svalue_t *c1 = invoke(closure1, box_int(23));
-  printf("Last %p\n", c1->value.closure->func);
   svalue_t *c2 = invoke(c1, box_int(5));
-  printf("%d\n", c2->value.closure->fvars[1]->value.integer);
   svalue_t *result = invoke(c2, box_int(334));
-  printf("%d\n", result->value.integer);
+  printf("print 23 + 5 + 334 == %d\n", result->value.integer);
   return 0;
 }
