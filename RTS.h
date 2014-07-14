@@ -68,18 +68,18 @@ svalue_t *
 invoke(svalue_t*, svalue_t*);
 
 
-inline svalue_t *
+svalue_t *
 box_int(int x);
 
-inline svalue_t *
+svalue_t *
 box_float(float x);
 
-inline svalue_t *
+svalue_t *
 box_double(double x);
 
-inline svalue_t *
+svalue_t *
 box_string(char *,
            size_t);
 
-inline svalue_t *
+svalue_t *
 box_closure(closure_t*);

@@ -4,6 +4,7 @@
 #include "error.h"
 #include "RTS.h"
 
+#ifndef LIB
 static svalue_t*
 make_doubleadder_inner_inner(svalue_t *, svalue_t **);
 
@@ -12,6 +13,7 @@ make_doubleadder_inner(svalue_t *, svalue_t **);
 
 static svalue_t*
 make_doubleadder(svalue_t *, svalue_t **);
+#endif
 
 inline svalue_t
 box_value(svalue_variants_t value,
@@ -96,7 +98,7 @@ box_closure(closure_t *closure) {
 }
 
 
-closure_t*
+inline closure_t*
 make_closure(svalue_t *(*func)(svalue_t*, svalue_t**),
              svalue_t **fvars) {
   /* The reason we dynamically allocate here is because
@@ -117,7 +119,8 @@ invoke(svalue_t *closure, svalue_t *val) {
 }
 
 
-static svalue_t*
+#ifndef LIB
+static inline svalue_t*
 make_doubleadder_inner_inner(svalue_t *z, svalue_t **env) {
   int x,y;
   x = env[0]->value.integer;
@@ -126,7 +129,7 @@ make_doubleadder_inner_inner(svalue_t *z, svalue_t **env) {
   return box_int(z->value.integer);
 }
 
-static svalue_t*
+static inline svalue_t*
 make_doubleadder_inner(svalue_t *y, svalue_t **env) {
   env[1] = y;
   closure_t *inner = make_closure(make_doubleadder_inner_inner, env);
@@ -154,3 +157,4 @@ main(void) {
   printf("print 23 + 5 + 334 == %d\n", result->value.integer);
   return 0;
 }
+#endif

@@ -20,9 +20,9 @@ lib: tokenize.c closures.c tokenize.h RTS.h
 	$(CC) -DLIB -DNDEBUG -c -fpic -Wall -Wextra -pedantic -Wpointer-arith -Werror -std=c99 -O3 ./closures.c;
 	$(CC) -shared -o closures.so closures.o;
 
-debug:
-	$(CC) -g -Wall -Wextra -pedantic -Wpointer-arith -Wmissing-prototypes -std=c99 -O3 ./tokenize.c -lmaa;
-	$(CC) -g -Wall -Wextra -pedantic -Wpointer-arith -Wmissing-prototypes -std=c99 -O3 ./closures.c;
+debug: tokenize.c closures.c tokenize.h RTS.h
+	$(CC) -Wall -Wextra -pedantic -Wpointer-arith -Wmissing-prototypes -Werror -std=c99 ./tokenize.c -lmaa;
+	$(CC) -Wall -Wextra -pedantic -Wpointer-arith -Wmissing-prototypes -Werror -std=c99 ./closures.c;
 
 debuglib: tokenize.c closures.c tokenize.h RTS.h
 	$(CC) -g -c -fpic -Wall -Wextra -pedantic -Wpointer-arith -Wmissing-prototypes -Werror -std=c99 ./tokenize.c;
