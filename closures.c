@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "error.h"
-#include "closures.h"
+#include "RTS.h"
 
 inline svalue_t *
 box_value(svalue_variants_t value,
@@ -25,11 +25,14 @@ box_value(svalue_variants_t value,
     case STRING:
       val->value = value;
       val->type_tag = type;
+    case CLOSURE:
+      val->value = value;
+      val->type_tag = type;
   }
   return val;
 }
 
-svalue_t *
+inline svalue_t *
 box_int(int x) {
   svalue_t *val = malloc(sizeof(svalue_t));
   CHECK(val);
@@ -74,6 +77,16 @@ box_string(char *chars, size_t n) {
   return val;
 }
 
+inline svalue_t *
+box_closure(closure_t closure) {
+  svalue_t *val = malloc(sizeof(svalue_t));
+  CHECK(val);
+  svalue_variants_t value_val;
+  value_val.closure = (struct closure_t *)&closure;
+  val = box_value(value_val, CLOSURE);
+  return val;
+}
+
 
 inline closure_t
 make_closure(svalue_t *(*func)(svalue_t, svalue_t*),
@@ -111,6 +124,7 @@ main(void) {
   (void)box_float;
   (void)box_double;
   (void)box_string;
+  (void)box_closure;
   return 0;
 }
 #endif

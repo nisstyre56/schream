@@ -37,17 +37,33 @@ typedef struct {
   hsh_HashTable memo;
 } token_stream;
 
-bool push_token(token_stream*, token_t);
+bool
+push_token(token_stream*, token_t);
 
-bool pop_token(token_stream*);
+bool
+pop_token(token_stream*);
 
-token_t peek_token(token_stream*);
+token_t
+peek_token(token_stream*);
 
-token_stream tokenize(source_t, uint32_t, const uint32_t);
+token_stream
+tokenize(source_t, uint32_t, const uint32_t);
 
-bool release_tokens(token_stream*);
+bool
+release_tokens(token_stream*);
 
-static uint32_t match_int(source_t, uint32_t, const uint32_t);
-static uint32_t match_float(source_t, uint32_t, const uint32_t);
-static uint32_t match_identifier(source_t, uint32_t, const uint32_t);
-static uint32_t match_symbol(source_t, uint32_t, const uint32_t);
+static uint32_t
+match_int(source_t, uint32_t, const uint32_t);
+
+static uint32_t
+match_float(source_t, uint32_t, const uint32_t);
+
+static uint32_t
+match_identifier(source_t, uint32_t, const uint32_t);
+
+static uint32_t
+match_symbol(source_t, uint32_t, const uint32_t);
+
+int
+free_token(const void *,
+           const void *);
