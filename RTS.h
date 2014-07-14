@@ -46,8 +46,8 @@ typedef
  */
 typedef
   struct {
-    svalue_t *(*func)(svalue_t, svalue_t*);
-    svalue_t *fvars;
+    svalue_t *(*func)(svalue_t*, svalue_t**);
+    svalue_t **fvars;
   } closure_t;
 
 typedef
@@ -61,11 +61,11 @@ svalue_t *
 box_value(svalue_variants_t, stype_t);
 
 closure_t
-make_closure(svalue_t *(*func)(svalue_t, svalue_t*),
-                                     svalue_t*);
+make_closure(svalue_t *(*func)(svalue_t*, svalue_t**),
+                                     svalue_t**);
 
 svalue_t *
-invoke(closure_t, svalue_t);
+invoke(closure_t, svalue_t*);
 
 
 inline svalue_t *
@@ -86,7 +86,10 @@ box_closure(closure_t);
 
 #ifndef LIB
 static svalue_t*
-make_adder_inner(svalue_t, svalue_t *);
+make_doubleadder_inner_inner(svalue_t*, svalue_t **);
+
+static svalue_t*
+make_adder_inner(svalue_t*, svalue_t **);
 
 static closure_t
 make_adder(svalue_t *);
