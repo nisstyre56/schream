@@ -11,15 +11,17 @@ typedef enum {
   QUOTE = 4,
   WSPACE = 5,
   PAREN = 6 ,
-  EMPTY = 7
+  EMPTY = 7,
+  STRING = 8
 } tok_t;
 
 typedef union {
-    char *symbol;
-    char *identifier;
-    char *integer;
-    char *floating;
-    char *parenthesis;
+    const char *symbol;
+    const char *identifier;
+    const char *integer;
+    const char *floating;
+    const char *parenthesis;
+    const char *string;
     bool quote;
     bool whitespace;
     bool null_token;

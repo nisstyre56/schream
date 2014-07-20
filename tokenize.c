@@ -49,9 +49,9 @@ static const token_t right_paren = {
   }
 };
 
-static inline char *
+static inline const char *
 string_head(uint32_t n,
-            char *in,
+            const char *in,
             char *out) {
   /* out must be large enough to store the number of characters
    * you want to select from in, plus a byte for the null terminator
@@ -68,7 +68,7 @@ string_head(uint32_t n,
     printf("Out of memory");
     exit(EXIT_FAILURE);
   }
-  return out;
+  return (const char*)out;
 }
 
 static inline token_t
@@ -102,7 +102,7 @@ push_token(token_stream *tokens,
     /* We've reached the maximum stack size
      * So we must try to increase that by GROWTH_SIZE
      */
-    token_t *new_tokens = realloc(tokens->tokens, sizeof(token_t) * (max + GROWTH_SIZE));
+    token_t *new_tokens = xrealloc(tokens->tokens, sizeof(token_t) * (max + GROWTH_SIZE));
     if (!new_tokens) {
       printf("Could not allocate enough memory for the token stack\n");
       exit(EXIT_FAILURE);
@@ -289,12 +289,12 @@ match_symbol(source_t source,
 static inline void
 extract_token(uint32_t position,
               uint32_t begin,
-              source_t source,
-              char *token_val) {
+              const source_t source,
+              const char *token_val) {
     assert(position > begin);
     string_head(position - begin,
                 &source[begin],
-                token_val);
+                (char *)token_val);
 }
 
 token_stream
@@ -308,10 +308,10 @@ tokenize(source_t source,
    *
    */
   uint32_t position = begin;
-  char *current_token_val;
+  const char *current_token_val;
   token_stream token_stack;
   token_val_t current_token;
-  token_t *tokens = calloc(STACK_SIZE, sizeof(token_t));
+  token_t *tokens = xcalloc(STACK_SIZE, sizeof(token_t));
 
   hsh_HashTable token_memo = hsh_create(NULL, NULL);
 
@@ -346,14 +346,14 @@ tokenize(source_t source,
       /* Matched a float */
       lookahead = source[position];
       source[position] = '\0';
-      if ((current_token_val = (char *)hsh_retrieve(token_stack.memo, source+begin))) {
+      if ((current_token_val = hsh_retrieve(token_stack.memo, source+begin))) {
         current_token.floating = current_token_val;
         source[position] = lookahead;
       }
       else {
         source[position] = lookahead;
         assert(position > begin);
-        current_token_val = calloc(((position - begin) + 1), sizeof(char));
+        current_token_val = xcalloc(((position - begin) + 1), sizeof(char));
         CHECK(current_token_val);
         extract_token(position, begin, source, current_token_val);
         hsh_insert(token_stack.memo, current_token_val, current_token_val);
@@ -365,7 +365,7 @@ tokenize(source_t source,
       /* Matched an int */
       lookahead = source[position];
       source[position] = '\0';
-      if ((current_token_val = (char *)hsh_retrieve(token_stack.memo, source+begin))) {
+      if ((current_token_val = hsh_retrieve(token_stack.memo, source+begin))) {
         current_token.integer = current_token_val;
         source[position] = lookahead;
       }
@@ -374,7 +374,7 @@ tokenize(source_t source,
         assert(position <= length);
 
         source[position] = lookahead;
-        current_token_val = calloc(((position - begin) + 1), sizeof(char));
+        current_token_val = xcalloc(((position - begin) + 1), sizeof(char));
         CHECK(current_token_val);
         extract_token(position, begin, source, current_token_val);
         hsh_insert(token_stack.memo, current_token_val, current_token_val);
@@ -386,7 +386,7 @@ tokenize(source_t source,
       /* Matched a symbol */
       lookahead = source[position];
       source[position] = '\0';
-      if ((current_token_val = (char *)hsh_retrieve(token_stack.memo, source+begin))) {
+      if ((current_token_val = hsh_retrieve(token_stack.memo, source+begin))) {
         current_token.symbol = current_token_val;
         source[position] = lookahead;
       }
@@ -395,7 +395,7 @@ tokenize(source_t source,
         assert(position <= length);
 
         source[position] = lookahead;
-        current_token_val = calloc(((position - begin) + 1), sizeof(char));
+        current_token_val = xcalloc(((position - begin) + 1), sizeof(char));
         CHECK(current_token_val);
         extract_token(position, begin, source, current_token_val);
         hsh_insert(token_stack.memo, current_token_val, current_token_val);
@@ -412,7 +412,7 @@ tokenize(source_t source,
       /* Matched an identifier */
       lookahead = source[position];
       source[position] = '\0';
-      if ((current_token_val = (char *)hsh_retrieve(token_stack.memo, source+begin))) {
+      if ((current_token_val = hsh_retrieve(token_stack.memo, source+begin))) {
         current_token.identifier = current_token_val;
         source[position] = lookahead;
       }
@@ -421,7 +421,7 @@ tokenize(source_t source,
         assert(position <= length);
 
         source[position] = lookahead;
-        current_token_val = calloc(((position - begin) + 1), sizeof(char));
+        current_token_val = xcalloc(((position - begin) + 1), sizeof(char));
         CHECK(current_token_val);
         extract_token(position, begin, source, current_token_val);
         hsh_insert(token_stack.memo, current_token_val, current_token_val);
@@ -449,7 +449,7 @@ free_token(const void *key,
            const void *val) {
   /* silence warnings about unused parameters, key and val point to the same data*/
   (void)key;
-  free((char *)val);
+  xfree((char *)val);
   return true;
 }
 
@@ -461,7 +461,7 @@ release_tokens(token_stream *tokens) {
   CHECK(tokens);
   CHECK(tokens->tokens);
   assert(tokens->max_length > 0);
-  free(tokens->tokens);
+  xfree(tokens->tokens);
   hsh_iterate(tokens->memo, free_token);
 
   hsh_destroy(tokens->memo);
