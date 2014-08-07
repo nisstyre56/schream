@@ -102,7 +102,7 @@ push_token(token_stream *tokens,
     /* We've reached the maximum stack size
      * So we must try to increase that by GROWTH_SIZE
      */
-    token_t *new_tokens = xrealloc(tokens->tokens, sizeof(token_t) * (max + GROWTH_SIZE));
+    token_t *new_tokens = xrealloc(tokens->tokens, sizeof (token_t) * (max + GROWTH_SIZE));
     if (!new_tokens) {
       printf("Could not allocate enough memory for the token stack\n");
       exit(EXIT_FAILURE);
@@ -311,7 +311,7 @@ tokenize(source_t source,
   const char *current_token_val;
   token_stream token_stack;
   token_val_t current_token;
-  token_t *tokens = xcalloc(STACK_SIZE, sizeof(token_t));
+  token_t *tokens = xcalloc(STACK_SIZE, sizeof (token_t));
 
   hsh_HashTable token_memo = hsh_create(NULL, NULL);
 
@@ -353,7 +353,7 @@ tokenize(source_t source,
       else {
         source[position] = lookahead;
         assert(position > begin);
-        current_token_val = xcalloc(((position - begin) + 1), sizeof(char));
+        current_token_val = xcalloc(((position - begin) + 1), sizeof (char));
         CHECK(current_token_val);
         extract_token(position, begin, source, current_token_val);
         hsh_insert(token_stack.memo, current_token_val, current_token_val);
@@ -374,7 +374,7 @@ tokenize(source_t source,
         assert(position <= length);
 
         source[position] = lookahead;
-        current_token_val = xcalloc(((position - begin) + 1), sizeof(char));
+        current_token_val = xcalloc(((position - begin) + 1), sizeof (char));
         CHECK(current_token_val);
         extract_token(position, begin, source, current_token_val);
         hsh_insert(token_stack.memo, current_token_val, current_token_val);
@@ -395,7 +395,7 @@ tokenize(source_t source,
         assert(position <= length);
 
         source[position] = lookahead;
-        current_token_val = xcalloc(((position - begin) + 1), sizeof(char));
+        current_token_val = xcalloc(((position - begin) + 1), sizeof (char));
         CHECK(current_token_val);
         extract_token(position, begin, source, current_token_val);
         hsh_insert(token_stack.memo, current_token_val, current_token_val);
@@ -421,7 +421,7 @@ tokenize(source_t source,
         assert(position <= length);
 
         source[position] = lookahead;
-        current_token_val = xcalloc(((position - begin) + 1), sizeof(char));
+        current_token_val = xcalloc(((position - begin) + 1), sizeof (char));
         CHECK(current_token_val);
         extract_token(position, begin, source, current_token_val);
         hsh_insert(token_stack.memo, current_token_val, current_token_val);

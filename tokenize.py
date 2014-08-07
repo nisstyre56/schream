@@ -18,6 +18,7 @@ class TokenValT(Union):
                 ("integer", c_char_p),
                 ("floating", c_char_p),
                 ("parenthesis", c_char_p),
+                ("string", c_char_p),
                 ("quote", c_bool),
                 ("whitespace", c_bool),
                 ("null_token", c_bool)]
@@ -49,4 +50,4 @@ def tokenize(source):
 
 line = " '''' a b"
 xs = list(tokenize(line))
-print xs
+print(xs)
