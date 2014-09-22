@@ -44,7 +44,7 @@ box_value(svalue_variants_t value,
 
 inline svalue_t *
 box_int(int x) {
-  svalue_t *val = malloc(sizeof(svalue_t));
+  svalue_t *val = malloc(sizeof (svalue_t));
   CHECK(val);
   svalue_variants_t value_val;
   value_val.integer = x;
@@ -54,7 +54,7 @@ box_int(int x) {
 
 inline svalue_t *
 box_float(float x) {
-  svalue_t *val = malloc(sizeof(svalue_t));
+  svalue_t *val = malloc(sizeof (svalue_t));
   CHECK(val);
   svalue_variants_t value_val;
   value_val.floating = x;
@@ -64,7 +64,7 @@ box_float(float x) {
 
 inline svalue_t *
 box_double(double x) {
-  svalue_t *val = malloc(sizeof(svalue_t));
+  svalue_t *val = malloc(sizeof (svalue_t));
   CHECK(val);
   svalue_variants_t value_val;
   value_val.doublev = x;
@@ -78,7 +78,7 @@ box_string(char *chars, size_t n) {
   strval.string = chars;
   strval.size = n;
 
-  svalue_t *val = malloc(sizeof(svalue_t));
+  svalue_t *val = malloc(sizeof (svalue_t));
   CHECK(val);
 
   svalue_variants_t value_val;
@@ -89,7 +89,7 @@ box_string(char *chars, size_t n) {
 
 inline svalue_t *
 box_closure(closure_t *closure) {
-  svalue_t *val = calloc(sizeof(svalue_t), 1);
+  svalue_t *val = calloc(sizeof (svalue_t), 1);
   CHECK(val);
   svalue_variants_t value_val;
   value_val.closure = closure;
@@ -98,7 +98,7 @@ box_closure(closure_t *closure) {
 }
 
 
-inline closure_t*
+inline svalue_t*
 make_closure(svalue_t *(*func)(svalue_t*, svalue_t**),
              svalue_t **fvars) {
   /* The reason we dynamically allocate here is because
@@ -107,10 +107,10 @@ make_closure(svalue_t *(*func)(svalue_t*, svalue_t**),
    * closure or else it is undefined behavior when it is invoked
    * since it would get deallocated when this function returns
    */
-  closure_t *closure = malloc(sizeof(closure_t));
+  closure_t *closure = malloc(sizeof (closure_t));
   closure->func = func;
   closure->fvars = fvars;
-  return closure;
+  return box_closure(closure);
 }
 
 inline svalue_t*
@@ -132,25 +132,24 @@ make_doubleadder_inner_inner(svalue_t *z, svalue_t **env) {
 static inline svalue_t*
 make_doubleadder_inner(svalue_t *y, svalue_t **env) {
   env[1] = y;
-  closure_t *inner = make_closure(make_doubleadder_inner_inner, env);
-  return box_closure(inner);
+  return make_closure(make_doubleadder_inner_inner, env);
 }
 
 static svalue_t*
 make_doubleadder(svalue_t *x, svalue_t **env) {
   env[0] = x;
-  closure_t *closure = make_closure(make_doubleadder_inner, env);
-  return box_closure(closure);
+  return make_closure(make_doubleadder_inner, env);
 }
+
+/*svalue_t **env extend(uint32_t n, svalue_t *v*/
 
 int
 main(void) {
   (void)box_float;
   (void)box_double;
   (void)box_string;
-  svalue_t **env = calloc(sizeof(svalue_t *), 2);
-  closure_t *closure1_closure = make_closure(make_doubleadder, env);
-  svalue_t *closure1 = box_closure(closure1_closure);
+  svalue_t **env = calloc(sizeof (svalue_t *), 2);
+  svalue_t *closure1 = make_closure(make_doubleadder, env);
   svalue_t *c1 = invoke(closure1, box_int(23));
   svalue_t *c2 = invoke(c1, box_int(5));
   svalue_t *result = invoke(c2, box_int(334));
