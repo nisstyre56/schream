@@ -69,4 +69,5 @@ match_symbol(source_t, uint32_t, const uint32_t);
 int
 free_token(const void *,
            const void *);
-
+token_t
+testfunc(void);

@@ -80,6 +80,15 @@ make_token(token_val_t val,
   return result;
 }
 
+token_t
+testfunc(void) {
+  token_val_t wspace = {
+    .whitespace=true
+  };
+  return make_token(wspace, QUOTE);
+}
+
+
 bool
 push_token(token_stream *tokens,
            token_t token) {

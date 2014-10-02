@@ -4,6 +4,13 @@ typedef
     char *string;
   } sc_string_t;
 
+typedef
+  struct {
+    struct svalue_t *left;
+    struct svalue_t *right;
+  }
+  sc_pair_t;
+
 /* This is not the most space efficient representation
  * However it is an easy to understand and debug one
  */
@@ -13,7 +20,8 @@ typedef
     float floating;
     double doublev;
     sc_string_t string;
-    struct closure_t *closure;
+    sc_pair_t pair;
+    struct sc_closure_t *closure;
   } svalue_variants_t;
 
 /* The tag values for each different type */
@@ -23,12 +31,13 @@ typedef
     FLOAT = 1,
     DOUBLE = 2,
     STRING = 3,
-    CLOSURE = 4
+    CLOSURE = 4,
+    PAIR = 5
   } stype_t;
 
 /* An actual boxed scheme value */
 typedef
-  struct {
+  struct svalue_t {
     stype_t type_tag;
     svalue_variants_t value;
   } svalue_t;
@@ -45,22 +54,15 @@ typedef
  * way
  */
 typedef
-  struct closure_t {
+  struct sc_closure_t {
     svalue_t *(*func)(svalue_t*, svalue_t**);
     svalue_t **fvars;
-  } closure_t;
-
-typedef
-  struct {
-    svalue_t head;
-    struct cell *tail;
-  }
-  cell;
+  } sc_closure_t;
 
 svalue_t
 box_value(svalue_variants_t, stype_t);
 
-closure_t*
+svalue_t*
 make_closure(svalue_t *(*func)(svalue_t*, svalue_t**),
                                      svalue_t**);
 
@@ -82,4 +84,4 @@ box_string(char *,
            size_t);
 
 svalue_t *
-box_closure(closure_t*);
+box_closure(sc_closure_t*);
