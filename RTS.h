@@ -55,7 +55,7 @@ typedef
  */
 typedef
   struct sc_closure_t {
-    svalue_t *(*func)(svalue_t*, svalue_t**);
+    svalue_t *(*func)(svalue_t**, svalue_t**);
     svalue_t **fvars;
   } sc_closure_t;
 
@@ -63,11 +63,11 @@ svalue_t
 box_value(svalue_variants_t, stype_t);
 
 svalue_t*
-make_closure(svalue_t *(*func)(svalue_t*, svalue_t**),
+make_closure(svalue_t *(*func)(svalue_t**, svalue_t**),
                                      svalue_t**);
 
 svalue_t *
-invoke(svalue_t*, svalue_t*);
+invoke(svalue_t*, svalue_t**);
 
 
 svalue_t *
@@ -85,3 +85,6 @@ box_string(char *,
 
 svalue_t *
 box_closure(sc_closure_t*);
+
+svalue_t *
+box_pair(svalue_t*, svalue_t*);

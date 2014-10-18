@@ -7,13 +7,13 @@
 /* Test case stuff */
 #ifndef LIB
 static svalue_t*
-make_doubleadder_inner_inner(svalue_t *, svalue_t **);
+make_doubleadder_inner_inner(svalue_t **, svalue_t **);
 
 static svalue_t*
-make_doubleadder_inner(svalue_t *, svalue_t **);
+make_doubleadder_inner(svalue_t **, svalue_t **);
 
 static svalue_t*
-make_doubleadder(svalue_t *, svalue_t **);
+make_doubleadder(svalue_t **, svalue_t **);
 #endif
 
 inline svalue_t
@@ -126,7 +126,7 @@ box_pair(svalue_t *left, svalue_t *right) {
 }
 
 inline svalue_t*
-make_closure(svalue_t *(*func)(svalue_t*, svalue_t**),
+make_closure(svalue_t *(*func)(svalue_t**, svalue_t**),
              svalue_t **fvars) {
   /* The reason we dynamically allocate here is because
    * svalue_variants_t will hold a pointer to the closure
@@ -141,8 +141,8 @@ make_closure(svalue_t *(*func)(svalue_t*, svalue_t**),
 }
 
 inline svalue_t*
-invoke(svalue_t *closure, svalue_t *val) {
-  return closure->value.closure->func(val, closure->value.closure->fvars);
+invoke(svalue_t *closure, svalue_t **arguments) {
+  return closure->value.closure->func(arguments, closure->value.closure->fvars);
 }
 
 /*
@@ -157,23 +157,23 @@ invoke(svalue_t *closure, svalue_t *val) {
 /* More testing stuff */
 #ifndef LIB
 static inline svalue_t*
-make_doubleadder_inner_inner(svalue_t *z, svalue_t **env) {
+make_doubleadder_inner_inner(svalue_t **z, svalue_t **env) {
   int x,y;
   x = env[0]->value.integer;
   y = env[1]->value.integer;
-  z->value.integer = x + y + (z->value.integer);
-  return box_int(z->value.integer);
+  z[0]->value.integer = x + y + (z[0]->value.integer);
+  return box_int(z[0]->value.integer);
 }
 
 static inline svalue_t*
-make_doubleadder_inner(svalue_t *y, svalue_t **env) {
-  env[1] = y;
+make_doubleadder_inner(svalue_t **y, svalue_t **env) {
+  env[1] = *y;
   return make_closure(make_doubleadder_inner_inner, env);
 }
 
 static svalue_t*
-make_doubleadder(svalue_t *x, svalue_t **env) {
-  env[0] = x;
+make_doubleadder(svalue_t **x, svalue_t **env) {
+  env[0] = *x;
   return make_closure(make_doubleadder_inner, env);
 }
 
@@ -189,15 +189,16 @@ main(void) {
   /* Get the final closure */
   svalue_t *closure1 = make_closure(make_doubleadder, env);
   /* Invoke the closure that the closure returns */
-  svalue_t *c1 = invoke(closure1, box_int(23));
-  svalue_t *c2 = invoke(c1, box_int(5));
-  svalue_t *result = invoke(c2, box_int(334));
+  svalue_t *c1 = invoke(closure1, &box_int(23));
+  svalue_t *c2 = invoke(c1, &box_int(5));
+  svalue_t *result = invoke(c2, &box_int(334));
   /* The final result */
   printf("print 23 + 5 + 334 == %d\n", result->value.integer);
   svalue_t *a = box_int(123);
   svalue_t *b = box_int(455);
   svalue_t *improper = box_pair(a, b);
   improper->value.pair.right = improper;
+  /* woo cyclic pair */
   printf("(%d, %d)\n", improper->value.pair.left->value.integer, improper->value.pair.right->value.pair.left->value.integer);
   return 0;
 }
