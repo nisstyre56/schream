@@ -145,6 +145,21 @@ invoke(svalue_t *closure, svalue_t **arguments) {
   return closure->value.closure->func(arguments, closure->value.closure->fvars);
 }
 
+/* Special case where there is only on argument
+ * this might end up only being used for testing
+ * since the code generator will construct singleton
+ * arrays most likely, anyway
+ */
+inline svalue_t*
+invoke1(svalue_t *closure, svalue_t *arg) {
+  svalue_t **args = malloc(sizeof (svalue_t *));
+  CHECK(args);
+  args[0] = arg;
+  svalue_t* result = invoke(closure, args);
+  free(args);
+  return result;
+}
+
 /*
  * The process for closure conversion basically involves finding all of the free variables
  * This will give the number of variables the environment must hold in total
@@ -189,9 +204,9 @@ main(void) {
   /* Get the final closure */
   svalue_t *closure1 = make_closure(make_doubleadder, env);
   /* Invoke the closure that the closure returns */
-  svalue_t *c1 = invoke(closure1, &box_int(23));
-  svalue_t *c2 = invoke(c1, &box_int(5));
-  svalue_t *result = invoke(c2, &box_int(334));
+  svalue_t *c1 = invoke1(closure1, box_int(23));
+  svalue_t *c2 = invoke1(c1, box_int(5));
+  svalue_t *result = invoke1(c2, box_int(334));
   /* The final result */
   printf("print 23 + 5 + 334 == %d\n", result->value.integer);
   svalue_t *a = box_int(123);

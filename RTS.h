@@ -69,6 +69,10 @@ make_closure(svalue_t *(*func)(svalue_t**, svalue_t**),
 svalue_t *
 invoke(svalue_t*, svalue_t**);
 
+svalue_t *
+invoke1(svalue_t*, svalue_t*);
+
+
 
 svalue_t *
 box_int(int x);
