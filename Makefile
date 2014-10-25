@@ -2,7 +2,7 @@ default: tokenize.c RTS.c tokenize.h RTS.h
 	$(MAKE) lib;
 	$(CC) -Wall -Wextra -pedantic -Wpointer-arith -Wmissing-prototypes -Werror -std=c99 -O3 ./tokenize.c -lmaa -o tokenize_test;
 	$(CC) -Wall -Wextra -pedantic -Wpointer-arith -Wmissing-prototypes -Werror -std=c99 -O3 ./RTS.c -o RTS.o;
-	$(CC) -Wall -Wextra -pedantic -Wpointer-arith -Wmissing-prototypes -Werror -std=c99 -O3 ./reader.c -lmaa -o reader_test -L. -ltokenize -lrts -Wl,-rpath,/home/wes/schream;
+	$(CC) -DLIB -Wall -Wextra -pedantic -Wpointer-arith -Wmissing-prototypes -Werror -std=c99 -O3 ./reader.c -lmaa -o reader_test -L. -ltokenize -lrts -Wl,-rpath,/home/wes/schream;
 
 unsafe: tokenize.c RTS.c tokenize.h RTS.h
 	$(CC) -DNDEBUG -std=c99 -O3 ./tokenize.c -lmaa;

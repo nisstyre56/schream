@@ -53,6 +53,21 @@ tokenize(source_t, uint32_t, const uint32_t);
 
 bool
 release_tokens(token_stream*);
+
+#ifndef LIB
+static uint32_t
+match_int(source_t, uint32_t, const uint32_t);
+
+static uint32_t
+match_float(source_t, uint32_t, const uint32_t);
+
+static uint32_t
+match_identifier(source_t, uint32_t, const uint32_t);
+
+static uint32_t
+match_symbol(source_t, uint32_t, const uint32_t);
+#endif
+
 int
 free_token(const void *,
            const void *);
