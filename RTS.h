@@ -43,15 +43,14 @@ typedef
   } svalue_t;
 
 /* A closure is a function pointer taking a
- * single argument and an environment
+ * list of arguments and an environment
  * What will happen is that applications of
- * procedures will be 'curried' but they will
  * always be required to be fully applied earlier
  * on in the compiler by checking applications
  * against the arity of a procedure (obtained by looking
- * at its definition). This simplifies compilation, but
- * does not change the semantics of procedures in any
- * way
+ * at its definition). This simplifies compilation because
+ * they can be specialized for single argument procedures
+ * which does not require the extra pointer
  */
 typedef
   struct sc_closure_t {

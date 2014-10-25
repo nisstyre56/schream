@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdbool.h>
@@ -286,7 +287,17 @@ match_symbol(source_t source,
          (source[i] == '\'')) && i < length) { /* consume leading whitespace and quotes */
     i++;
   }
-  while (!isspace(source[i]) && i < length) {
+  if (source[i] == ')') {
+    printf("Unexpected )\n");
+    exit(EXIT_FAILURE);
+  }
+  if (source[i] == '(') {
+   return i;
+  }
+  while (!isspace(source[i]) &&
+         source[i] != '(' &&
+         source[i] != ')' &&
+         i < length) {
     i++;
   }
   if (i == begin+1) { /* if we did not increment i more than once (before the loop) */
@@ -479,6 +490,48 @@ release_tokens(token_stream *tokens) {
 
 #ifndef LIB
 int main(void) {
+  void *source_code = malloc(111000);
+  size_t nbytes = read(STDIN_FILENO, source_code, 111000);
+  if (nbytes == 0) {
+    exit(EXIT_FAILURE);
+  }
+  token_stream toks = tokenize(source_code, 0, nbytes);
+  token_t current_tok;
+  while (toks.length > 0) {
+    current_tok = peek_token(&toks);
+    switch (current_tok.token_type) {
+      case SYMBOL:
+        printf("symbol: %s\n", current_tok.token.symbol);
+        break;
+      case IDENTIFIER:
+        printf("identifer: %s\n", current_tok.token.identifier);
+        break;
+      case INTEGER:
+        printf("integer: %s\n", current_tok.token.integer);
+        break;
+      case FLOATING:
+        printf("floating: %s\n", current_tok.token.floating);
+        break;
+      case QUOTE:
+        printf("quote: '\n");
+        break;
+      case WSPACE:
+        printf("whitespace\n");
+        break;
+      case PAREN:
+        printf("paren: %s\n", current_tok.token.parenthesis);
+        break;
+      case EMPTY:
+        printf("this should not be empty\n");
+        break;
+      case STRING:
+        printf("string: %s\n", current_tok.token.string);
+        break;
+      default:
+        printf("oops, there was an unknown token, check valgrind or gdb\n");
+    }
+    pop_token(&toks);
+  }
   return 0;
 }
 #endif
