@@ -1,6 +1,8 @@
 default: tokenize.c RTS.c tokenize.h RTS.h
-	$(CC) -DNDEBUG -Wall -Wextra -pedantic -Wpointer-arith -Wmissing-prototypes -Werror -std=c99 -O3 ./tokenize.c -lmaa -o tokenize_test;
-	$(CC) -DNDEBUG -Wall -Wextra -pedantic -Wpointer-arith -Wmissing-prototypes -Werror -std=c99 -O3 ./RTS.c -o rts_test;
+	$(MAKE) lib;
+	$(CC) -Wall -Wextra -pedantic -Wpointer-arith -Wmissing-prototypes -Werror -std=c99 -O3 ./tokenize.c -lmaa -o tokenize_test;
+	$(CC) -Wall -Wextra -pedantic -Wpointer-arith -Wmissing-prototypes -Werror -std=c99 -O3 ./RTS.c -o RTS.o;
+	$(CC) -Wall -Wextra -pedantic -Wpointer-arith -Wmissing-prototypes -Werror -std=c99 -O3 ./reader.c -lmaa -o reader_test -L. -ltokenize -lrts -Wl,-rpath,/home/wes/schream;
 
 unsafe: tokenize.c RTS.c tokenize.h RTS.h
 	$(CC) -DNDEBUG -std=c99 -O3 ./tokenize.c -lmaa;
@@ -15,7 +17,10 @@ unsafelib: tokenize.c RTS.c tokenize.h RTS.h
 
 lib: tokenize.c RTS.c tokenize.h RTS.h
 	$(CC) -DLIB -DNDEBUG -c -fpic -Wall -Wextra -pedantic -Wpointer-arith -Werror -std=c99 -O3 ./tokenize.c
-	$(CC) -shared -o tokenize.so tokenize.o -lmaa;
+	$(CC) -shared -o libtokenize.so tokenize.o -lmaa;
+	$(CC) -DLIB -DNDEBUG -c -fpic -Wall -Wextra -pedantic -Wpointer-arith -Werror -std=c99 -O3 ./RTS.c
+	$(CC) -shared -o librts.so RTS.o -lmaa;
+
 
 	$(CC) -DLIB -DNDEBUG -c -fpic -Wall -Wextra -pedantic -Wpointer-arith -Werror -std=c99 -O3 ./RTS.c;
 	$(CC) -shared -o RTS.so RTS.o;

@@ -27,11 +27,11 @@ typedef
 /* The tag values for each different type */
 typedef
   enum {
-    INT = 0,
-    FLOAT = 1,
-    DOUBLE = 2,
-    STRING = 3,
-    CLOSURE = 4,
+    RTS_INT = 0,
+    RTS_FLOAT = 1,
+    RTS_DOUBLE = 2,
+    RTS_STRING = 3,
+    RTS_CLOSURE = 4,
     PAIR = 5
   } stype_t;
 

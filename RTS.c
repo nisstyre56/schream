@@ -31,24 +31,24 @@ box_value(svalue_variants_t value,
 
   svalue_t val;
   switch (type) {
-    case INT:
+    case RTS_INT:
       val.value.integer = value.integer;
       val.type_tag = type;
       break;
-    case FLOAT:
+    case RTS_FLOAT:
       val.value.floating = value.floating;
       val.type_tag = type;
       break;
-    case DOUBLE:
+    case RTS_DOUBLE:
       val.value.doublev = value.doublev;
       val.type_tag = type;
-    case STRING:
+    case RTS_STRING:
       val.value.string = value.string;
       val.type_tag = type;
     case PAIR:
       val.value.pair = value.pair;
       val.type_tag = type;
-    case CLOSURE:
+    case RTS_CLOSURE:
       val.value.closure = value.closure;
       val.type_tag = type;
   }
@@ -61,7 +61,7 @@ box_int(int x) {
   CHECK(val);
   svalue_variants_t value_val;
   value_val.integer = x;
-  *val = box_value(value_val, INT);
+  *val = box_value(value_val, RTS_INT);
   return val;
 }
 
@@ -71,7 +71,7 @@ box_float(float x) {
   CHECK(val);
   svalue_variants_t value_val;
   value_val.floating = x;
-  *val = box_value(value_val, FLOAT);
+  *val = box_value(value_val, RTS_FLOAT);
   return val;
 }
 
@@ -81,7 +81,7 @@ box_double(double x) {
   CHECK(val);
   svalue_variants_t value_val;
   value_val.doublev = x;
-  *val = box_value(value_val, DOUBLE);
+  *val = box_value(value_val, RTS_DOUBLE);
   return val;
 }
 
@@ -96,7 +96,7 @@ box_string(char *chars, size_t n) {
 
   svalue_variants_t value_val;
   value_val.string = strval;
-  *val = box_value(value_val, STRING);
+  *val = box_value(value_val, RTS_STRING);
   return val;
 }
 
@@ -106,7 +106,7 @@ box_closure(sc_closure_t *closure) {
   CHECK(val);
   svalue_variants_t value_val;
   value_val.closure = closure;
-  *val = box_value(value_val, CLOSURE);
+  *val = box_value(value_val, RTS_CLOSURE);
   return val;
 }
 

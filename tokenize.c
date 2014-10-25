@@ -532,6 +532,7 @@ int main(void) {
     }
     pop_token(&toks);
   }
+  release_tokens(&toks);
   return 0;
 }
 #endif
